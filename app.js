@@ -4,20 +4,44 @@ var express = require('express'),
   session = require('express-session'),
   app = express();
 
-app.use(bodyParser.urlencoded({extended: true}));
+app.set("view engine", "ejs");
 
-app.use(function(req, res) {
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.json());
+
+app.use(express.static(__dirname + '/public'));
+
+app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  // next();
+  next();
+});
+
+app.get('/', function(req, res) {
+  console.log("This works!");
+  res.render("index");
+});
+
+
+app.get('/logs', function(req, res) {
+  console.log("IM GETTING YOUR LOGS FOR YOU")
+  db.ThoughtLog.findAll()
+    .then(function(thoughtLogs) {
+      // console.log(thoughtLogs);
+      // return all todos in JSON format
+     res.send(thoughtLogs);
+    });
 });
 
 app.post('/logs', function(req, res) {
-  var thoughtLog = req.body.thoughtLog;
-
-  db.ThoughtLog.create(thoughtLog.situation);
+  var thoughts = req.body;
+  console.log(thoughts);
+  console.log(req.body);
+  db.ThoughtLog.create({situation: thoughts.situation, emotion1: thoughts.emotion1, emotion2: thoughts.emotion2, emotion3: thoughts.emotion3, emotion4: thoughts.emotion4, emotion5: thoughts.emotion5}, function(err, thought) {
+    console.log(thought);
+  });
 });
 
 app.listen(3000, function() {
-  console.log("server running");
+  console.log("server is now running");
 });
